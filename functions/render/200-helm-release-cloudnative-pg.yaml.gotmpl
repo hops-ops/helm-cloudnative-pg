@@ -1,0 +1,50 @@
+# code: language=yaml
+#
+# Helm release for cloudnative-pg
+#
+# Integration defaults:
+# - Prometheus metrics enabled for PostgreSQL cluster monitoring
+# - ServiceMonitor created for Prometheus Operator discovery
+# - PodMonitor for per-cluster PostgreSQL metrics
+#
+
+{{- $cnpg := $state.cloudnativePg }}
+
+---
+apiVersion: helm.m.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ $cnpg.releaseName }}
+  annotations:
+    {{ setResourceNameAnnotation "helm-release-cloudnative-pg" }}
+  labels: {{ $cnpg.labels | toJson }}
+spec:
+  managementPolicies: {{ $cnpg.managementPolicies | toJson }}
+  forProvider:
+    chart:
+      name: cloudnative-pg
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.23.2
+    namespace: {{ $cnpg.namespace }}
+    {{- if $cnpg.overrideAllValues }}
+    values:
+      {{- toYaml $cnpg.overrideAllValues | nindent 6 }}
+    {{- else }}
+    values:
+      fullnameOverride: cloudnative-pg
+      nameOverride: cloudnative-pg
+      crds:
+        create: true
+      # Prometheus metrics for PostgreSQL operator monitoring
+      monitoring:
+        podMonitorEnabled: true
+        grafanaDashboard:
+          create: true
+      {{- if $cnpg.values }}
+      {{- toYaml $cnpg.values | nindent 6 }}
+      {{- end }}
+    {{- end }}
+  rollbackLimit: 3
+  providerConfigRef:
+    name: {{ $cnpg.providerConfigRef.name }}
+    kind: {{ $cnpg.providerConfigRef.kind }}

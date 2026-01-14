@@ -1,0 +1,16 @@
+apiVersion: helm.hops.ops.com.ai/v1alpha1
+kind: CloudnativePg
+metadata:
+  name: cloudnative-pg
+  namespace: example-env
+spec:
+  clusterName: example-cluster
+  labels:
+    team: platform
+    environment: production
+  providerConfigRef:
+    name: example-cluster
+    kind: ProviderConfig
+  values:
+    monitoring:
+      podMonitorEnabled: true
