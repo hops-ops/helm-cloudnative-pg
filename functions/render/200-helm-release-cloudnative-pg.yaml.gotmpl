@@ -31,8 +31,6 @@ spec:
       {{- toYaml $cnpg.overrideAllValues | nindent 6 }}
     {{- else }}
     values:
-      fullnameOverride: cloudnative-pg
-      nameOverride: cloudnative-pg
       crds:
         create: true
       # Prometheus metrics for PostgreSQL operator monitoring
